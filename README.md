@@ -8,7 +8,7 @@ City-to-city household combo marketplace
 
 \## Overview
 
-Reloc helps people resell household items when relocating to a new city.  
+Reloc helps people resell household items when relocating to a new city.
 
 Sellers can list items as \*\*combos or individually\*\*, and buyers can browse, order, pay, and track delivery.
 
@@ -43,10 +43,6 @@ Sellers can list items as \*\*combos or individually\*\*, and buyers can browse,
 \- \*\*Storage:\*\* Cloudinary for images
 
 \- \*\*Deployment Ready:\*\* Frontend (Vercel/Netlify), Backend (Render/Railway)
-
-
-
-\## Project Structure
 
 
 
