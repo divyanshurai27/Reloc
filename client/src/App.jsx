@@ -44,6 +44,8 @@ export default function App() {
         <Route path="/combo/:id" element={<ComboDetails />} />
         <Route path="/combos" element={<ViewCombos />} />
 <Route path="/combos/:city" element={<ViewCombos />} />
+<Route path="/buyer-dashboard" element={<BuyerDashboard />} />
+
 
 
 
