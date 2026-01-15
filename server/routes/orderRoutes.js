@@ -19,7 +19,7 @@ const protect = (req, res, next) => {
   }
 };
 
-// Buyer places order
+// BUYER places order
 router.post("/place", protect, async (req, res) => {
   const { comboId, deliveryAddress } = req.body;
 
@@ -32,7 +32,7 @@ router.post("/place", protect, async (req, res) => {
 
     const order = await Order.create({
       buyerId: req.user.id,
-      sellerId: combo.sellerId,
+      sellerId: combo.seller,       
       comboId: combo._id,
       deliveryAddress,
       status: "Pending",
@@ -46,11 +46,11 @@ router.post("/place", protect, async (req, res) => {
   }
 });
 
-// Seller/Delivery/Admin updates order status
+// SELLER / ADMIN updates order status
 router.put("/status/:orderId", protect, async (req, res) => {
   const { status, note } = req.body;
 
-  if (!["seller", "delivery", "admin"].includes(req.user.role)) {
+  if (!["seller", "admin"].includes(req.user.role)) {
     return res.status(401).json({ error: "Not allowed to update order" });
   }
 
@@ -61,16 +61,20 @@ router.put("/status/:orderId", protect, async (req, res) => {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    // Only the assigned seller OR admin can modify seller's order
-    if (req.user.role === "seller" && order.sellerId.toString() !== req.user.id) {
+    // Seller can update only their orders
+    if (
+      req.user.role === "seller" &&
+      order.sellerId.toString() !== req.user.id
+    ) {
       return res.status(403).json({ error: "You can only update your own orders" });
     }
 
     order.status = status;
     if (note) order.inspectionNote = note;
 
-    // Auto mark paid when pickup is scheduled
-    if (status === "Pickup Scheduled") order.paymentStatus = "Paid";
+    if (status === "Pickup Scheduled") {
+      order.paymentStatus = "Paid";
+    }
 
     await order.save();
     res.json({ message: "Status updated", order });
@@ -79,7 +83,29 @@ router.put("/status/:orderId", protect, async (req, res) => {
   }
 });
 
-// Optional moderation API: Admin deletes order
+// GET BUYER ORDERS (DASHBOARD)
+router.get("/buyer", protect, async (req, res) => {
+  try {
+    const orders = await Order.find({ buyerId: req.user.id })
+      .populate("comboId");
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET SELLER ORDERS (DASHBOARD)
+router.get("/seller", protect, async (req, res) => {
+  try {
+    const orders = await Order.find({ sellerId: req.user.id })
+      .populate("comboId");
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ADMIN deletes order
 router.delete("/remove/:orderId", protect, async (req, res) => {
   if (req.user.role !== "admin")
     return res.status(401).json({ error: "Only admin can remove orders" });
