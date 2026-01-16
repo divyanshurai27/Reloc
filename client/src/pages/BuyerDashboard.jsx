@@ -2,15 +2,36 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const statusColor = (status) => {
+  switch (status) {
+    case "Pending":
+      return "bg-yellow-500";
+    case "Pickup Scheduled":
+      return "bg-blue-500";
+    case "In Inspection":
+      return "bg-purple-500";
+    case "Out for Delivery":
+      return "bg-indigo-500";
+    case "Delivered":
+      return "bg-green-600";
+    case "Cancelled":
+      return "bg-red-600";
+    default:
+      return "bg-gray-500";
+  }
+};
+
 export default function BuyerDashboard() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
 
-  // Protect route
   useEffect(() => {
-    if (!token) navigate("/login");
-    else fetchOrders();
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    fetchOrders();
   }, []);
 
   const fetchOrders = async () => {
@@ -27,51 +48,82 @@ export default function BuyerDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto p-6">
 
         {/* HEADER */}
-        <h1 className="text-4xl font-bold mb-2">
-          My Orders 🛒
-        </h1>
-        <p className="mb-6 text-lg opacity-80">
-          Track your relocation combo orders in real time.
+        <h1 className="text-4xl font-bold mb-2">My Orders 📦</h1>
+        <p className="text-gray-400 mb-8">
+          Track your relocation combo orders and delivery status.
         </p>
 
-        {/* ORDERS */}
-        {orders.length === 0 ? (
-          <p className="text-gray-400">
-            You haven’t placed any orders yet.
-          </p>
-        ) : (
-          <div className="grid gap-4">
-            {orders.map((o) => (
-              <div
-                key={o._id}
-                className="bg-white text-black p-4 rounded-2xl shadow"
-              >
-                <h3 className="font-semibold mb-1">
-                  {o.comboId?.title}
-                </h3>
-
-                <p className="text-sm mb-1">
-                  Price: ₹{o.comboId?.price}
-                </p>
-
-                <p className="text-sm mb-1">
-                  Order Status: <b>{o.status}</b>
-                </p>
-
-                <p className="text-sm mb-1">
-                  Payment: <b>{o.paymentStatus}</b>
-                </p>
-
-                <p className="text-xs text-gray-600 mt-2">
-                  Delivery Address: {o.deliveryAddress}
-                </p>
-              </div>
-            ))}
+        {/* EMPTY STATE */}
+        {orders.length === 0 && (
+          <div className="bg-gray-900 p-8 rounded-2xl text-center">
+            <p className="text-lg mb-2">No orders yet</p>
+            <p className="text-gray-400">
+              Browse combos and place your first order.
+            </p>
           </div>
         )}
+
+        {/* ORDER LIST */}
+        <div className="grid gap-5">
+          {orders.map((order) => (
+            <div
+              key={order._id}
+              className="bg-gray-900 rounded-2xl p-5 shadow"
+            >
+              {/* TOP */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    {order.comboId?.title}
+                  </h2>
+                  <p className="text-gray-400 text-sm">
+                    ₹{order.comboId?.price}
+                  </p>
+                </div>
+
+                <span
+                  className={`text-sm px-3 py-1 rounded-full text-white w-fit ${statusColor(
+                    order.status
+                  )}`}
+                >
+                  {order.status}
+                </span>
+              </div>
+
+              {/* DETAILS */}
+              <div className="mt-4 text-sm text-gray-300 space-y-1">
+                <p>
+                  <span className="text-gray-400">Delivery Address:</span>{" "}
+                  {order.deliveryAddress}
+                </p>
+
+                <p>
+                  <span className="text-gray-400">Payment:</span>{" "}
+                  <span
+                    className={
+                      order.paymentStatus === "Paid"
+                        ? "text-green-400"
+                        : "text-yellow-400"
+                    }
+                  >
+                    {order.paymentStatus}
+                  </span>
+                </p>
+              </div>
+
+              {/* TIMELINE */}
+              <div className="mt-4 border-t border-gray-700 pt-3">
+                <p className="text-xs text-gray-500">
+                  Last updated: {new Date(order.updatedAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );

@@ -49,46 +49,73 @@ export default function ComboDetails() {
     return <p className="text-red-500 text-center mt-10">{msg}</p>;
   }
 
-  return (
-    <div className="p-6 max-w-3xl mx-auto text-white">
-      <div className="bg-white text-black rounded-2xl p-6 shadow-lg">
-        <h2 className="text-2xl font-bold mb-2">{combo.title}</h2>
+ return (
+  <div className="bg-gray-100 min-h-screen py-10">
+    <div className="max-w-5xl mx-auto px-6">
 
-        <p className="text-sm text-gray-600 mb-3">
-          City: {combo.city}
-        </p>
+      {/* CARD */}
+      <div className="bg-white rounded-xl shadow p-6 grid md:grid-cols-2 gap-8">
 
-        <p className="text-lg font-semibold mb-4">
-          ₹ {combo.price}
-        </p>
+        {/* LEFT – IMAGE */}
+        <div className="h-72 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400">
+          Combo Image
+        </div>
 
-        <h4 className="font-semibold mb-2">Items in this combo</h4>
+        {/* RIGHT – DETAILS */}
+        <div>
+          <h1 className="text-3xl font-bold mb-2">
+            {combo.title}
+          </h1>
 
-        <ul className="list-disc list-inside mb-4">
-          {combo.items.map((item, index) => (
-            <li key={index}>
-              <span className="font-medium">{item.name}</span>
-              {" — "}
-              <span className="text-sm text-gray-600">
-                {item.condition}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <button
-          className="bg-black text-white px-6 py-2 rounded-xl font-semibold"
-          onClick={placeOrder}
-        >
-          Place Order
-        </button>
-
-        {msg && (
-          <p className="text-sm text-red-500 mt-3">
-            {msg}
+          <p className="text-gray-500 mb-3">
+            Location: {combo.city}
           </p>
-        )}
+
+          <p className="text-2xl font-semibold text-blue-600 mb-4">
+            ₹{combo.price}
+          </p>
+
+          <span className="inline-block bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full mb-6">
+            Verified Seller
+          </span>
+
+          <h3 className="font-semibold mb-2">Items Included</h3>
+          <ul className="list-disc ml-6 text-gray-700 mb-6">
+            {combo.items.map((item, idx) => (
+              <li key={idx}>
+                {item.name} — <span className="text-gray-500">{item.condition}</span>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            onClick={placeOrder}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition"
+          >
+            Place Order
+          </button>
+
+          {msg && (
+            <p className="text-sm text-center mt-3 text-red-500">
+              {msg}
+            </p>
+          )}
+        </div>
       </div>
+
+      {/* SELLER INFO */}
+      <div className="mt-6 bg-white rounded-xl shadow p-5">
+        <h3 className="font-semibold mb-2">Seller Information</h3>
+        <p className="text-sm text-gray-600">
+          Name: {combo.seller?.name || "Verified Seller"}
+        </p>
+        <p className="text-sm text-gray-600">
+          Contact available after order placement.
+        </p>
+      </div>
+
     </div>
-  );
+  </div>
+);
+
 }

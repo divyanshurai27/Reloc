@@ -46,81 +46,127 @@ export default function SellerDashboard() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="p-6 max-w-4xl mx-auto">
+ 
+    return (
+  
+  <div className="bg-gray-100 min-h-screen py-10">
+    <div className="max-w-7xl mx-auto px-6">
 
-        {/* SELLER WELCOME */}
-        <h1 className="text-4xl font-bold mb-2">
-          Welcome to Reloc, Seller 👋
-        </h1>
-        <p className="mb-6 text-lg opacity-80">
-          Build, sell, and track relocation combo orders easily.
+      {/* HEADER */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-1">Seller Dashboard</h1>
+        <p className="text-gray-600">
+          Manage your combo listings and track orders
         </p>
+      </div>
 
-        {/* QUICK ACTIONS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-          <Link
-            to="/create-combo"
-            className="bg-white text-black p-3 rounded-2xl text-center font-semibold"
-          >
-            Create Combo Pack
-          </Link>
-
-          <Link
-            to="/combos"
-            className="bg-gray-200 text-black p-3 rounded-2xl text-center font-medium"
-          >
-            View All Marketplace Combos
-          </Link>
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="bg-white p-5 rounded-xl shadow">
+          <p className="text-sm text-gray-500">Total Orders</p>
+          <p className="text-2xl font-bold">{orders.length}</p>
         </div>
 
-        {/* SELLER ORDERS */}
-        <h2 className="text-2xl font-semibold mb-4">
-          Incoming Orders
-        </h2>
-
-        {orders.length === 0 ? (
-          <p className="text-gray-400">
-            No orders received yet.
+        <div className="bg-white p-5 rounded-xl shadow">
+          <p className="text-sm text-gray-500">Pending</p>
+          <p className="text-2xl font-bold text-yellow-600">
+            {orders.filter(o => o.status === "Pending").length}
           </p>
-        ) : (
-          <div className="grid gap-4">
-            {orders.map((o) => (
-              <div
-                key={o._id}
-                className="bg-white text-black p-4 rounded-2xl shadow"
-              >
-                <h3 className="font-semibold mb-1">
-                  {o.comboId?.title}
-                </h3>
+        </div>
 
-                <p className="text-sm">
-                  Buyer ID: {o.buyerId}
-                </p>
+        <div className="bg-white p-5 rounded-xl shadow">
+          <p className="text-sm text-gray-500">Delivered</p>
+          <p className="text-2xl font-bold text-green-600">
+            {orders.filter(o => o.status === "Delivered").length}
+          </p>
+        </div>
 
-                <p className="text-sm mb-2">
-                  Current Status: <b>{o.status}</b>
-                </p>
-
-                <select
-                  className="border p-2 rounded w-full"
-                  value={o.status}
-                  onChange={(e) =>
-                    updateStatus(o._id, e.target.value)
-                  }
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="bg-white p-5 rounded-xl shadow">
+          <p className="text-sm text-gray-500">Revenue</p>
+          <p className="text-2xl font-bold text-blue-600">
+            ₹{orders.reduce((sum, o) => sum + (o.comboId?.price || 0), 0)}
+          </p>
+        </div>
       </div>
+
+      {/* QUICK ACTIONS */}
+      <div className="flex gap-4 mb-10">
+        <Link
+          to="/create-combo"
+          className="bg-blue-600 text-white px-5 py-3 rounded-lg font-medium hover:bg-blue-700"
+        >
+          + Create New Combo
+        </Link>
+
+        <Link
+          to="/combos"
+          className="bg-white border px-5 py-3 rounded-lg font-medium hover:bg-gray-50"
+        >
+          View Marketplace
+        </Link>
+      </div>
+
+      {/* ORDERS */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <h2 className="text-2xl font-semibold mb-6">Incoming Orders</h2>
+
+        {orders.length === 0 && (
+          <p className="text-gray-500">No orders yet.</p>
+        )}
+
+        <div className="space-y-4">
+          {orders.map(order => (
+            <div
+              key={order._id}
+              className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+            >
+              <div>
+                <h3 className="font-semibold">
+                  {order.comboId?.title}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Buyer ID: {order.buyerId}
+                </p>
+                <p className="text-sm text-gray-500">
+                  ₹{order.comboId?.price}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    updateStatus(order._id, e.target.value)
+                  }
+                  className="border px-3 py-2 rounded-lg text-sm"
+                >
+                  <option>Pending</option>
+                  <option>Pickup Scheduled</option>
+                  <option>In Inspection</option>
+                  <option>Out for Delivery</option>
+                  <option>Delivered</option>
+                </select>
+
+                <span
+                  className={`text-xs px-3 py-1 rounded-full ${
+                    order.paymentStatus === "Paid"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {order.paymentStatus}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
-  );
+  </div>
+);
+
+
+
+  
 }

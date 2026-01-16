@@ -26,44 +26,64 @@ export default function ViewCombos() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h2 className="text-3xl font-semibold mb-6 text-white text-center">
+  
+  <div className="bg-gray-100 min-h-screen py-10">
+    <div className="max-w-7xl mx-auto px-6">
+
+      <h2 className="text-3xl font-bold mb-8 text-center">
         {city ? `Combos in ${city}` : "All Available Combos"}
       </h2>
 
       {combos.length === 0 && (
-        <p className="text-gray-400 text-center">
+        <p className="text-gray-500 text-center">
           No combos available.
         </p>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {combos.map((c) => (
           <div
             key={c._id}
-            className="bg-white p-4 rounded-2xl shadow-md"
+            className="bg-white rounded-xl shadow hover:shadow-lg transition cursor-pointer"
           >
-            <h3 className="text-lg font-semibold mb-1">
-              {c.title}
-            </h3>
+            {/* IMAGE PLACEHOLDER */}
+            <div className="h-40 bg-gray-200 rounded-t-xl flex items-center justify-center text-gray-400">
+              Image
+            </div>
 
-            <p className="text-sm text-gray-600 mb-2">
-              City: {c.city}
-            </p>
+            {/* CONTENT */}
+            <div className="p-4">
+              <h3 className="text-lg font-semibold mb-1">
+                {c.title}
+              </h3>
 
-            <p className="font-bold mb-3">
-              ₹ {c.price}
-            </p>
+              <p className="text-sm text-gray-500 mb-2">
+                {c.city}
+              </p>
 
-            <button
-              className="bg-black text-white px-4 py-2 rounded-lg text-sm"
-              onClick={() => navigate(`/combo/${c._id}`)}
-            >
-              View Details
-            </button>
+              <div className="flex justify-between items-center">
+                <span className="text-xl font-bold text-blue-600">
+                  ₹{c.price}
+                </span>
+
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                  Verified
+                </span>
+              </div>
+
+              <button
+                onClick={() => navigate(`/combo/${c._id}`)}
+                className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+              >
+                View Details
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
     </div>
-  );
+  </div>
+);
+
 }
