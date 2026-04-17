@@ -21,7 +21,7 @@ const protect = (req, res, next) => {
 
 // BUYER places order
 router.post("/place", protect, async (req, res) => {
-  const { comboId, deliveryAddress } = req.body;
+  const { comboId, deliveryAddress, pickupDate, pickupTime, sellingModel } = req.body;
 
   try {
     if (!mongoose.Types.ObjectId.isValid(comboId))
@@ -32,11 +32,14 @@ router.post("/place", protect, async (req, res) => {
 
     const order = await Order.create({
       buyerId: req.user.id,
-      sellerId: combo.seller,       
+      sellerId: combo.seller,
       comboId: combo._id,
       deliveryAddress,
-      status: "Pending",
+      status: pickupDate ? "Pickup Scheduled" : "Pending",
       paymentStatus: "Unpaid",
+      pickupDate: pickupDate || "",
+      pickupTime: pickupTime || "",
+      sellingModel: sellingModel || combo.sellingModel || "Direct Resale",
       inspectionNote: ""
     });
 
@@ -72,7 +75,8 @@ router.put("/status/:orderId", protect, async (req, res) => {
     order.status = status;
     if (note) order.inspectionNote = note;
 
-    if (status === "Pickup Scheduled") {
+    // Auto-mark paid when payment completed
+    if (status === "Payment Completed") {
       order.paymentStatus = "Paid";
     }
 

@@ -1,165 +1,159 @@
-import { useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Navbar from "../components/Navbar.jsx";
+
+const CITIES = ["Delhi", "Mumbai", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata", "Other"];
 
 export default function CreateCombo() {
   const navigate = useNavigate();
-
   const [data, setData] = useState({
-    title: "",
-    price: "",
-    description: "",
-    city: "Delhi",
-    items: [{ name: "", condition: "", image: "" }],
+    title: "", price: "", description: "", city: "Delhi",
+    items: [{ name: "", condition: "Good", image: "" }],
   });
+  const [msg,     setMsg]     = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [msg, setMsg] = useState("");
+  const handle = (e) => setData({ ...data, [e.target.name]: e.target.value });
 
-  const handle = (e) => {
-    setData({ ...data, [e.target.name]: e.target.value });
+  const handleItem = (idx, field, value) => {
+    const items = [...data.items];
+    items[idx][field] = value;
+    setData({ ...data, items });
   };
 
-  const handleItemChange = (index, field, value) => {
-    const updatedItems = [...data.items];
-    updatedItems[index][field] = value;
-    setData({ ...data, items: updatedItems });
-  };
+  const addItem    = () => setData({ ...data, items: [...data.items, { name: "", condition: "Good", image: "" }] });
+  const removeItem = (idx) => setData({ ...data, items: data.items.filter((_, i) => i !== idx) });
 
-  const addItem = () => {
-    setData({
-      ...data,
-      items: [...data.items, { name: "", condition: "", image: "" }],
-    });
-  };
-
-  const removeItem = (index) => {
-    const updatedItems = data.items.filter((_, i) => i !== index);
-    setData({ ...data, items: updatedItems });
-  };
-
-  const submit = async () => {
+  const submit = async (e) => {
+    e.preventDefault();
     const token = localStorage.getItem("token");
-    if (!token) {
-      setMsg("Please login first!");
-      return;
-    }
-
+    if (!token) { navigate("/login"); return; }
+    setLoading(true); setMsg("");
     try {
       await axios.post(
         "http://localhost:5000/api/combos",
-        data,
+        { ...data, price: Number(data.price) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setMsg("Combo created successfully!");
-      setTimeout(() => navigate(`/combos/${data.city}`), 600);
+      navigate("/dashboard");
     } catch (err) {
-      setMsg(err.response?.data?.error || "Combo creation failed");
+      setMsg(err.response?.data?.error || "Failed to create combo.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="bg-white text-black w-96 p-6 rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-4">
-          Create Combo Pack
-        </h2>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="max-w-2xl mx-auto px-4 py-12 fade-in">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Create a Combo</h1>
+          <p className="text-gray-500 mt-1 text-sm">Bundle multiple items together for a faster sale.</p>
+        </div>
 
-        <input
-          className="border p-2 w-full mb-2 rounded-xl"
-          placeholder="Combo Title"
-          name="title"
-          value={data.title}
-          onChange={handle}
-        />
+        <form onSubmit={submit} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-5">
 
-        <input
-          className="border p-2 w-full mb-2 rounded-xl"
-          placeholder="Price"
-          name="price"
-          type="number"
-          value={data.price}
-          onChange={handle}
-        />
-
-        <textarea
-          className="border p-2 w-full mb-2 rounded-xl"
-          placeholder="Description (optional)"
-          name="description"
-          value={data.description}
-          onChange={handle}
-        />
-
-        <input
-          className="border p-2 w-full mb-2 rounded-xl"
-          placeholder="City"
-          name="city"
-          value={data.city}
-          onChange={handle}
-        />
-
-        <h4 className="font-semibold mt-3 mb-2">Items in Combo</h4>
-
-        {data.items.map((item, index) => (
-          <div
-            key={index}
-            className="border p-2 mb-2 rounded-xl"
-          >
+          {/* Title */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Combo Title *</label>
             <input
-              className="border p-1 w-full mb-1 rounded"
-              placeholder="Item Name"
-              value={item.name}
-              onChange={(e) =>
-                handleItemChange(index, "name", e.target.value)
-              }
+              name="title" required placeholder="e.g. Full Bedroom Setup"
+              value={data.title} onChange={handle}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
             />
-            <input
-              className="border p-1 w-full mb-1 rounded"
-              placeholder="Condition"
-              value={item.condition}
-              onChange={(e) =>
-                handleItemChange(index, "condition", e.target.value)
-              }
-            />
-            <input
-              className="border p-1 w-full rounded"
-              placeholder="Image URL (optional)"
-              value={item.image}
-              onChange={(e) =>
-                handleItemChange(index, "image", e.target.value)
-              }
-            />
-
-            {data.items.length > 1 && (
-              <button
-                className="text-red-500 text-sm mt-1"
-                onClick={() => removeItem(index)}
-              >
-                Remove item
-              </button>
-            )}
           </div>
-        ))}
 
-        <button
-          className="text-sm text-blue-600 mb-3"
-          onClick={addItem}
-        >
-          + Add another item
-        </button>
+          {/* Price + City */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1.5 block">Price (₹) *</label>
+              <input
+                name="price" type="number" required placeholder="e.g. 8000"
+                value={data.price} onChange={handle}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1.5 block">City *</label>
+              <select
+                name="city" value={data.city} onChange={handle}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              >
+                {CITIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
 
-        <button
-          className="bg-black text-white w-full p-2 rounded-xl font-semibold"
-          onClick={submit}
-        >
-          Create Combo
-        </button>
+          {/* Description */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Description <span className="text-gray-400 font-normal">(optional)</span></label>
+            <textarea
+              name="description" rows={3} placeholder="What's in this combo? Any special notes..."
+              value={data.description} onChange={handle}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+            />
+          </div>
 
-        {msg && (
-          <p className="text-center text-sm text-red-500 mt-3">
-            {msg}
-          </p>
-        )}
+          {/* Items */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-700">Items in Combo</label>
+              <button type="button" onClick={addItem} className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">
+                + Add item
+              </button>
+            </div>
+            <div className="space-y-3">
+              {data.items.map((item, idx) => (
+                <div key={idx} className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <input
+                      placeholder="Item name"
+                      value={item.name}
+                      onChange={e => handleItem(idx, "name", e.target.value)}
+                      className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    />
+                    <select
+                      value={item.condition}
+                      onChange={e => handleItem(idx, "condition", e.target.value)}
+                      className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    >
+                      {["New", "Good", "Used", "For Parts"].map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <input
+                    placeholder="Image URL (optional)"
+                    value={item.image}
+                    onChange={e => handleItem(idx, "image", e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                  {data.items.length > 1 && (
+                    <button type="button" onClick={() => removeItem(idx)} className="text-xs text-red-400 hover:text-red-600 mt-2 transition">
+                      − Remove item
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Error */}
+          {msg && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 text-center">{msg}</div>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm hover:shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Creating…</>
+            ) : "Create Combo →"}
+          </button>
+        </form>
       </div>
     </div>
   );

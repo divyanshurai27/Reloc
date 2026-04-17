@@ -45,10 +45,11 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// GET ALL COMBOS (OPTIONAL CITY FILTER)
+// GET ALL COMBOS (OPTIONAL CITY + BUNDLE TYPE FILTER)
 router.get("/", async (req, res) => {
   const filter = {};
-  if (req.query.city) filter.city = req.query.city;
+  if (req.query.city)       filter.city       = req.query.city;
+  if (req.query.bundleType) filter.bundleType = req.query.bundleType;
 
   try {
     const combos = await Combo.find(filter).populate("seller", "name email");
